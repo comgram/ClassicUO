@@ -147,7 +147,7 @@ namespace ClassicUO.Game.UI.Gumps
             int sW = (int) (_data.Bounds.Width * scale);
             int sH = (int) (_data.Bounds.Height * scale);
 
-            Add(_grid = new Grid(sX, sY, sW - sX, sH - sY, (int) (20 * scale)));
+            Add(_grid = new Grid(sX, sY, sW - sX, sH - sY, (int) (22 * scale)));
 
             ContainerGump gg = UIManager.Gumps.OfType<ContainerGump>().FirstOrDefault(s => s.LocalSerial == LocalSerial);
 
