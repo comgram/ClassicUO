@@ -147,7 +147,9 @@ namespace ClassicUO.Game.UI.Gumps
             int sW = (int) (_data.Bounds.Width * scale);
             int sH = (int) (_data.Bounds.Height * scale);
 
-            Add(_grid = new Grid(sX, sY, sW - sX, sH - sY, (int) (22 * scale)));
+            int itemSize = (int)(sW - sX - 14) / 6;
+
+            Add(_grid = new Grid(sX, sY, sW - sX, sH - sY, itemSize));
 
             ContainerGump gg = UIManager.Gumps.OfType<ContainerGump>().FirstOrDefault(s => s.LocalSerial == LocalSerial);
 
@@ -453,8 +455,10 @@ namespace ClassicUO.Game.UI.Gumps
         class Grid : Control
         {
             private DataBox _dataBox;
+            private readonly GridItem[] _gridList = new GridItem[50];
+            private ScrollBar _scrollBar;
 
-            public Grid(int x, int y, int width, int height, int itemSize = 20)
+            public Grid(int x, int y, int width, int height, int itemSize)
             {
                 CanMove = true;
                 AcceptMouseInput = true;
@@ -462,11 +466,12 @@ namespace ClassicUO.Game.UI.Gumps
                 Y = y;
                 //Height = height;
                 //Width = width;
-                //WantUpdateSize = false;
+                WantUpdateSize = false;
 
                 //_dataBox = new DataBox(0,0, Width, Height);
                 //Add(_dataBox);
 
+                //width -= 14;
 
                 int rows = width / itemSize;
                 int columns = height / itemSize;
@@ -476,12 +481,23 @@ namespace ClassicUO.Game.UI.Gumps
                     int yy = col * itemSize;
                     for (int row = 0; row < rows; row++)
                     {
-                        Add(new GridItem(row * itemSize, yy, itemSize, itemSize));
+                        Add(_gridList[col * rows + row] = new GridItem(row * itemSize, yy, itemSize - 2, itemSize - 2));
                     }
                 }
-               
+
+                Width = rows * itemSize;
+                Height = columns * itemSize;
+
+                _scrollBar = new ScrollBar(Width, 0, height);
+                Add(_scrollBar);
             }
 
+            public override void Update(double totalMS, double frameMS)
+            {
+                base.Update(totalMS, frameMS);
+
+                
+            }
 
             public override bool Draw(UltimaBatcher2D batcher, int x, int y)
             {
