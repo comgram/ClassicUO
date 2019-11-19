@@ -142,14 +142,15 @@ namespace ClassicUO.Game.UI.Gumps
             Width = container.Width = (int)(container.Width * scale);
             Height = container.Height = (int) (container.Height * scale);
 
-            int sX = (int) (_data.Bounds.X * scale);
-            int sY = (int) (_data.Bounds.Y * scale);
-            int sW = (int) (_data.Bounds.Width * scale);
-            int sH = (int) (_data.Bounds.Height * scale);
-
-            int itemSize = (int)(sW - sX - 14) / 6;
-
-            Add(_grid = new Grid(sX, sY, sW - sX, sH - sY, itemSize));
+            if (ProfileManager.Current.UseGridContainers)
+            {
+                int sX = (int)(_data.Bounds.X * scale);
+                int sY = (int)(_data.Bounds.Y * scale);
+                int sW = (int)(_data.Bounds.Width * scale);
+                int sH = (int)(_data.Bounds.Height * scale);
+                int itemSize = (sW - sX - 14) / 6;
+                Add(_grid = new Grid(sX, sY, sW - sX, sH - sY, itemSize));
+            }
 
             ContainerGump gg = UIManager.Gumps.OfType<ContainerGump>().FirstOrDefault(s => s.LocalSerial == LocalSerial);
 
@@ -464,14 +465,10 @@ namespace ClassicUO.Game.UI.Gumps
                 AcceptMouseInput = true;
                 X = x;
                 Y = y;
-                //Height = height;
-                //Width = width;
                 WantUpdateSize = false;
 
                 //_dataBox = new DataBox(0,0, Width, Height);
                 //Add(_dataBox);
-
-                //width -= 14;
 
                 int rows = width / itemSize;
                 int columns = height / itemSize;

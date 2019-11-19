@@ -129,7 +129,7 @@ namespace ClassicUO.Game.UI.Gumps
 
         // containers
         private HSliderBar _containersScale;
-        private Checkbox _containerScaleItems, _containerDoubleClickToLoot;
+        private Checkbox _containerScaleItems, _containerDoubleClickToLoot, _containerGrid;
 
         public OptionsGump() : base(0, 0)
         {
@@ -1336,6 +1336,7 @@ namespace ClassicUO.Game.UI.Gumps
 
             _containerScaleItems = CreateCheckBox(rightArea, "Scale items inside containers", ProfileManager.Current.ScaleItemsInsideContainers, 0, 20);
             _containerDoubleClickToLoot = CreateCheckBox(rightArea, "Double click to loot items inside containers", ProfileManager.Current.DoubleClickToLootInsideContainers, 0, 0);
+            _containerGrid = CreateCheckBox(rightArea, "Use grid containers", ProfileManager.Current.UseGridContainers, 0, 0);
 
             Add(rightArea, PAGE);
         }
@@ -1571,6 +1572,7 @@ namespace ClassicUO.Game.UI.Gumps
                     _containersScale.Value = 100;
                     _containerScaleItems.IsChecked = false;
                     _containerDoubleClickToLoot.IsChecked = false;
+                    _containerGrid.IsChecked = false;
                     break;
             }
         }
@@ -2048,11 +2050,12 @@ namespace ClassicUO.Game.UI.Gumps
             // containers
             int containerScale = ProfileManager.Current.ContainersScale;
 
-            if ((byte) _containersScale.Value != containerScale || ProfileManager.Current.ScaleItemsInsideContainers != _containerScaleItems.IsChecked)
+            if ((byte) _containersScale.Value != containerScale || ProfileManager.Current.ScaleItemsInsideContainers != _containerScaleItems.IsChecked || ProfileManager.Current.UseGridContainers != _containerGrid.IsChecked)
             {
                 containerScale = ProfileManager.Current.ContainersScale = (byte)_containersScale.Value;
                 UIManager.ContainerScale = containerScale / 100f;
                 ProfileManager.Current.ScaleItemsInsideContainers = _containerScaleItems.IsChecked;
+                ProfileManager.Current.UseGridContainers = _containerGrid.IsChecked;
 
                 foreach (ContainerGump resizableGump in UIManager.Gumps.OfType<ContainerGump>())
                 {
