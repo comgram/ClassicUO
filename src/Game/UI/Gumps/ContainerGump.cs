@@ -512,7 +512,7 @@ namespace ClassicUO.Game.UI.Gumps
             public override bool Draw(UltimaBatcher2D batcher, int x, int y)
             {
                 ResetHueVector();
-                batcher.DrawRectangle(Textures.GetTexture(Color.Gray), x, y, Width, Height, ref _hueVector);
+                batcher.DrawRectangle(Textures.GetTexture( MouseIsOver ? Color.LimeGreen : Color.Gray), x, y, Width, Height, ref _hueVector);
                 return base.Draw(batcher, x, y);
             }
         }
