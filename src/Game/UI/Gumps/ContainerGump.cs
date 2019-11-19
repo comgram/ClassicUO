@@ -149,7 +149,7 @@ namespace ClassicUO.Game.UI.Gumps
                 int sW = (int)(_data.Bounds.Width * scale);
                 int sH = (int)(_data.Bounds.Height * scale);
                 int itemSize = (sW - sX - 14) / 6;
-                Add(_grid = new Grid(sX, sY, sW - sX, sH - sY, itemSize));
+                Add(_grid = new Grid(sX, sY, sW - sX, sH - sY, itemSize, 6, 10));
             }
 
             ContainerGump gg = UIManager.Gumps.OfType<ContainerGump>().FirstOrDefault(s => s.LocalSerial == LocalSerial);
@@ -456,10 +456,13 @@ namespace ClassicUO.Game.UI.Gumps
         class Grid : Control
         {
             private DataBox _dataBox;
-            private readonly GridItem[] _gridList = new GridItem[50];
+            private readonly GridItem[] _gridList;
             private ScrollBar _scrollBar;
 
-            public Grid(int x, int y, int width, int height, int itemSize)
+            private readonly int _itemSize, _rows, _columns;
+            private readonly int _scrollbarHeight;
+
+            public Grid(int x, int y, int width, int height, int itemSize, int rows, int columns)
             {
                 CanMove = true;
                 AcceptMouseInput = true;
@@ -469,31 +472,74 @@ namespace ClassicUO.Game.UI.Gumps
 
                 //_dataBox = new DataBox(0,0, Width, Height);
                 //Add(_dataBox);
+                _itemSize = itemSize;
 
-                int rows = width / itemSize;
-                int columns = height / itemSize;
+                _columns = columns;
+                _rows = rows;
 
-                for (int col = 0; col < columns; col++)
+                _gridList = new GridItem[columns * rows];
+
+                int visible_rows = width / itemSize;
+                int visible_columns = height / itemSize;
+
+                //for (int col = 0; col < columns; col++)
+                //{
+                //    int yy = col * itemSize;
+                //    for (int row = 0; row < rows; row++)
+                //    {
+                //        Add(_gridList[col * rows + row] = new GridItem(row * itemSize, yy, itemSize - 2, itemSize - 2));
+                //    }
+                //} 
+                
+                Width = visible_rows * itemSize;
+                Height = visible_columns * itemSize;
+
+                int row = 0;
+                int col = 0;
+
+                for (int i = 0; i < _gridList.Length; i++)
                 {
-                    int yy = col * itemSize;
-                    for (int row = 0; row < rows; row++)
+                    Add(_gridList[col * _rows + row] = new GridItem(row * itemSize, col * itemSize, itemSize - 2, itemSize - 2));
+
+                    row++;
+
+                    if (row >= _rows)
                     {
-                        Add(_gridList[col * rows + row] = new GridItem(row * itemSize, yy, itemSize - 2, itemSize - 2));
+                        row = 0;
+                        col++;
                     }
                 }
 
-                Width = rows * itemSize;
-                Height = columns * itemSize;
-
                 _scrollBar = new ScrollBar(Width, 0, height);
+                _scrollBar.MinValue = 0;
+                _scrollBar.MaxValue = height;
+                _scrollbarHeight = -1;
+
+                Width += 14;
                 Add(_scrollBar);
             }
 
             public override void Update(double totalMS, double frameMS)
             {
                 base.Update(totalMS, frameMS);
+                CalculateScrollBarMaxValue();
+                _scrollBar.IsVisible = _scrollBar.MaxValue > _scrollBar.MinValue;
+            }
 
-                
+            protected override void OnMouseWheel(MouseEvent delta)
+            {
+                switch (delta)
+                {
+                    case MouseEvent.WheelScrollUp:
+                        _scrollBar.Value -= _scrollBar.ScrollStep;
+
+                        break;
+
+                    case MouseEvent.WheelScrollDown:
+                        _scrollBar.Value += _scrollBar.ScrollStep;
+
+                        break;
+                }
             }
 
             public override bool Draw(UltimaBatcher2D batcher, int x, int y)
@@ -502,7 +548,68 @@ namespace ClassicUO.Game.UI.Gumps
                 _hueVector.Z = 0.5f;
                 batcher.Draw2D(Textures.GetTexture(Color.Black), x, y, Width, Height, ref _hueVector);
 
-                return base.Draw(batcher, x, y);
+
+                _scrollBar.Draw(batcher, x + _scrollBar.X, y + _scrollBar.Y);
+
+                Rectangle scissor = ScissorStack.CalculateScissors(Matrix.Identity, x, y, Width, Height);
+
+                if (ScissorStack.PushScissors(scissor))
+                {
+                    batcher.EnableScissorTest(true);
+
+                    int height = 0;
+                    for (int col = 0; col < _columns; col++)
+                    {                   
+                        for (int row = 0; row < _rows; row++)
+                        {
+                            var item = _gridList[col * _rows + row];
+
+                            item.Y = height - _scrollBar.Value;
+
+                            if (height + item.Height <= _scrollBar.Value)
+                            {
+
+                            }
+                            else
+                            {
+                                item.Draw(batcher, x + item.X, y + item.Y);
+                            }
+                        
+                        }
+
+                        height += _itemSize;
+                    }
+
+
+                    batcher.EnableScissorTest(false);
+                    ScissorStack.PopScissors();
+                }
+
+
+                return true;
+            }
+
+
+            private void CalculateScrollBarMaxValue()
+            {
+                _scrollBar.Height = _scrollbarHeight >= 0 ? _scrollbarHeight : Height;
+                bool maxValue = _scrollBar.Value == _scrollBar.MaxValue && _scrollBar.MaxValue != 0;
+                int height = _columns * (_itemSize);
+                height -= _scrollBar.Height;
+
+
+                if (height > 0)
+                {
+                    _scrollBar.MaxValue = height;
+
+                    if (maxValue)
+                        _scrollBar.Value = _scrollBar.MaxValue;
+                }
+                else
+                {
+                    _scrollBar.MaxValue = 0;
+                    _scrollBar.Value = 0;
+                }
             }
         }
 
