@@ -21,6 +21,7 @@
 
 #endregion
 
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -237,6 +238,7 @@ namespace ClassicUO.Game.UI.Gumps
             _iconized?.Dispose();
             _grid?.Dispose();
             BuildGump();
+
             ItemsOnAdded(null, new CollectionChangedEventArgs<Serial>(FindControls<ItemGump>().Select(s => s.LocalSerial)));
         }
 
@@ -261,14 +263,12 @@ namespace ClassicUO.Game.UI.Gumps
 
         private void ItemsOnRemoved(object sender, CollectionChangedEventArgs<Serial> e)
         {
-            foreach (ItemGump v in Children.OfType<ItemGump>().Where(s => e.Contains(s.LocalSerial)))
-                v.Dispose();
+            RemoveItemsInside(e);
         }
 
         private void ItemsOnAdded(object sender, CollectionChangedEventArgs<Serial> e)
         {
-            foreach (ItemGump v in Children.OfType<ItemGump>().Where(s => e.Contains(s.LocalSerial)))
-                v.Dispose();
+            RemoveItemsInside(e);
 
             foreach (Serial s in e)
             {
@@ -289,16 +289,36 @@ namespace ClassicUO.Game.UI.Gumps
                     itemControl.Height = (int)(itemControl.Height * scale);
                 }
 
+                Add(itemControl);
+
+
+                if (ProfileManager.Current != null && ProfileManager.Current.UseGridContainers)
+                {
+                    _grid.SetItem(item);
+                    itemControl.IsVisible = false;
+                }
+
                 if (_hideIfEmpty && !IsVisible)
                     IsVisible = true;
-
-                Add(itemControl);
             }
         }
-    
+
+        private void RemoveItemsInside(IEnumerable<Serial> e)
+        {
+            if (ProfileManager.Current != null && ProfileManager.Current.UseGridContainers)
+            {
+                foreach (var v in _grid?.Children.OfType<GridItem>()
+                    .Where(s => s.HasItem && e.Contains(s.Item.Serial)))
+                    v.UnsetItem();
+            }
+
+            foreach (ItemGump v in Children.OfType<ItemGump>().Where(s => e.Contains(s.LocalSerial)))
+                v.Dispose();
+        }
+
 
         private void CheckItemControlPosition(ItemGump itemGump, Item item)
-        {
+        {         
             float scale = UIManager.ContainerScale;
 
             int x = (int) (itemGump.X * scale);
@@ -455,10 +475,8 @@ namespace ClassicUO.Game.UI.Gumps
 
         class Grid : Control
         {
-            private DataBox _dataBox;
             private readonly GridItem[] _gridList;
             private ScrollBar _scrollBar;
-
             private readonly int _itemSize, _rows, _columns;
             private readonly int _scrollbarHeight;
 
@@ -517,6 +535,27 @@ namespace ClassicUO.Game.UI.Gumps
 
                 Width += 14;
                 Add(_scrollBar);
+            }
+
+
+            public void SetItem(Serial serial)
+            {
+                for (int i = 0; i < _gridList.Length; i++)
+                {
+                    if (!_gridList[i].HasItem)
+                    {
+                        _gridList[i].SetItem(serial);
+                        break;
+                    }
+                }
+            }
+
+            public void SetItem(int position, Serial serial)
+            {
+                if (position >= 0 && position < _gridList.Length)
+                {
+                    _gridList[position].SetItem(serial);
+                }
             }
 
             public override void Update(double totalMS, double frameMS)
@@ -615,6 +654,8 @@ namespace ClassicUO.Game.UI.Gumps
 
         class GridItem : Control
         {
+            private readonly TextureControl _textureControl;
+
             public GridItem(int x, int y, int width, int height)
             {
                 CanMove = true;
@@ -624,16 +665,47 @@ namespace ClassicUO.Game.UI.Gumps
                 Width = width;
                 Height = height;
                 WantUpdateSize = false;
-            }
-            
-            public Item Item { get; set; }
 
+                _textureControl = new TextureControl() 
+                { 
+                    ScaleTexture = true,
+                    Width = width,
+                    Height = height
+                };
+
+                Add(_textureControl);
+            }
+
+            public Item Item { get; private set; }
+            public bool HasItem => Item != null && !Item.IsDestroyed;
+
+
+            public void SetItem(Serial serial)
+            {
+                if (serial.IsValid)
+                {
+                    Item = World.Items.Get(serial);
+                    _textureControl.Texture = FileManager.Art.GetTexture(Item.DisplayedGraphic);
+                }
+                else
+                {
+                    UnsetItem();
+                }
+            }
+
+            public void UnsetItem()
+            {
+                Item = null;
+                _textureControl.Texture = null;
+            }         
 
             public override bool Draw(UltimaBatcher2D batcher, int x, int y)
             {
                 ResetHueVector();
-                batcher.DrawRectangle(Textures.GetTexture( MouseIsOver ? Color.LimeGreen : Color.Gray), x, y, Width, Height, ref _hueVector);
-                return base.Draw(batcher, x, y);
+
+                base.Draw(batcher, x, y);
+                batcher.DrawRectangle(Textures.GetTexture(MouseIsOver || _textureControl.MouseIsOver ? Color.LimeGreen : Color.Gray), x, y, Width, Height, ref _hueVector);
+                return true;
             }
         }
     }
