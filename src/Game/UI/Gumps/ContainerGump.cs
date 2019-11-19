@@ -50,6 +50,7 @@ namespace ClassicUO.Game.UI.Gumps
         private int _eyeCorspeOffset;
         private GumpPic _eyeGumpPic;
         private bool _isCorspeContainer;
+        private Grid _grid;
 
         public ContainerGump() : base(0, 0)
         {
@@ -141,6 +142,13 @@ namespace ClassicUO.Game.UI.Gumps
             Width = container.Width = (int)(container.Width * scale);
             Height = container.Height = (int) (container.Height * scale);
 
+            int sX = (int) (_data.Bounds.X * scale);
+            int sY = (int) (_data.Bounds.Y * scale);
+            int sW = (int) (_data.Bounds.Width * scale);
+            int sH = (int) (_data.Bounds.Height * scale);
+
+            Add(_grid = new Grid(sX, sY, sW - sX, sH - sY, (int) (20 * scale)));
+
             ContainerGump gg = UIManager.Gumps.OfType<ContainerGump>().FirstOrDefault(s => s.LocalSerial == LocalSerial);
 
             if (gg == null)
@@ -224,7 +232,7 @@ namespace ClassicUO.Game.UI.Gumps
             Children[0].Dispose();
             _iconizerArea?.Dispose();
             _iconized?.Dispose();
-
+            _grid?.Dispose();
             BuildGump();
             ItemsOnAdded(null, new CollectionChangedEventArgs<Serial>(FindControls<ItemGump>().Select(s => s.LocalSerial)));
         }
@@ -439,6 +447,74 @@ namespace ClassicUO.Game.UI.Gumps
             }
 
             base.OnDragEnd(x, y);
+        }
+
+
+        class Grid : Control
+        {
+            private DataBox _dataBox;
+
+            public Grid(int x, int y, int width, int height, int itemSize = 20)
+            {
+                CanMove = true;
+                AcceptMouseInput = true;
+                X = x;
+                Y = y;
+                //Height = height;
+                //Width = width;
+                //WantUpdateSize = false;
+
+                //_dataBox = new DataBox(0,0, Width, Height);
+                //Add(_dataBox);
+
+
+                int rows = width / itemSize;
+                int columns = height / itemSize;
+
+                for (int col = 0; col < columns; col++)
+                {
+                    int yy = col * itemSize;
+                    for (int row = 0; row < rows; row++)
+                    {
+                        Add(new GridItem(row * itemSize, yy, itemSize, itemSize));
+                    }
+                }
+               
+            }
+
+
+            public override bool Draw(UltimaBatcher2D batcher, int x, int y)
+            {
+                ResetHueVector();
+                _hueVector.Z = 0.5f;
+                batcher.Draw2D(Textures.GetTexture(Color.Black), x, y, Width, Height, ref _hueVector);
+
+                return base.Draw(batcher, x, y);
+            }
+        }
+
+        class GridItem : Control
+        {
+            public GridItem(int x, int y, int width, int height)
+            {
+                CanMove = true;
+                AcceptMouseInput = true;
+                X = x;
+                Y = y;
+                Width = width;
+                Height = height;
+                WantUpdateSize = false;
+            }
+            
+            public Item Item { get; set; }
+
+
+            public override bool Draw(UltimaBatcher2D batcher, int x, int y)
+            {
+                ResetHueVector();
+                batcher.DrawRectangle(Textures.GetTexture(Color.Gray), x, y, Width, Height, ref _hueVector);
+                return base.Draw(batcher, x, y);
+            }
         }
     }
 }
