@@ -570,65 +570,67 @@ namespace ClassicUO.Game.UI.Gumps
                 base.Update(totalMS, frameMS);
             }
 
-            private class ItemGumpFixed : ItemGump
-            {
-                private readonly Point _originalSize;
-                private readonly Point _point;
-                private readonly Rectangle _rect;
-
-                public ItemGumpFixed(Item item, int w, int h) : base(item)
-                {
-                    Width = w;
-                    Height = h;
-                    WantUpdateSize = false;
-
-                    ArtTexture texture = (ArtTexture)Texture;
-
-                    _originalSize.X = Width;
-                    _originalSize.Y = Height;
-                    _rect = texture.ImageRectangle;
-
-                    if (_rect.Width < Width)
-                    {
-                        _originalSize.X = _rect.Width;
-                        _point.X = (Width >> 1) - (_originalSize.X >> 1);
-                    }
-
-                    if (_rect.Height < Height)
-                    {
-                        _originalSize.Y = _rect.Height;
-                        _point.Y = (Height >> 1) - (_originalSize.Y >> 1);
-                    }
-                }
-
-
-                public override bool Draw(UltimaBatcher2D batcher, int x, int y)
-                {
-                    Item item = World.Items.Get(LocalSerial);
-
-                    if (item == null)
-                    {
-                        Dispose();
-                    }
-
-                    if (IsDisposed)
-                        return false;
-
-                    ResetHueVector();
-                    ShaderHuesTraslator.GetHueVector(ref _hueVector, MouseIsOver && HighlightOnMouseOver ? 0x0035 : item.Hue, item.ItemData.IsPartialHue, 0, true);
-
-                    return batcher.Draw2D(Texture, x + _point.X, y + _point.Y,
-                                          _originalSize.X, _originalSize.Y,
-                                          _rect.X, _rect.Y,
-                                          _rect.Width, _rect.Height,
-                                          ref _hueVector);
-                }
-
-                public override bool Contains(int x, int y)
-                {
-                    return true;
-                }
-            }
         }
     }
+
+    class ItemGumpFixed : ItemGump
+    {
+        private readonly Point _originalSize;
+        private readonly Point _point;
+        private readonly Rectangle _rect;
+
+        public ItemGumpFixed(Item item, int w, int h) : base(item)
+        {
+            Width = w;
+            Height = h;
+            WantUpdateSize = false;
+
+            ArtTexture texture = (ArtTexture)Texture;
+
+            _originalSize.X = Width;
+            _originalSize.Y = Height;
+            _rect = texture.ImageRectangle;
+
+            if (_rect.Width < Width)
+            {
+                _originalSize.X = _rect.Width;
+                _point.X = (Width >> 1) - (_originalSize.X >> 1);
+            }
+
+            if (_rect.Height < Height)
+            {
+                _originalSize.Y = _rect.Height;
+                _point.Y = (Height >> 1) - (_originalSize.Y >> 1);
+            }
+        }
+
+
+        public override bool Draw(UltimaBatcher2D batcher, int x, int y)
+        {
+            Item item = World.Items.Get(LocalSerial);
+
+            if (item == null)
+            {
+                Dispose();
+            }
+
+            if (IsDisposed)
+                return false;
+
+            ResetHueVector();
+            ShaderHuesTraslator.GetHueVector(ref _hueVector, MouseIsOver && HighlightOnMouseOver ? 0x0035 : item.Hue, item.ItemData.IsPartialHue, 0, true);
+
+            return batcher.Draw2D(Texture, x + _point.X, y + _point.Y,
+                                  _originalSize.X, _originalSize.Y,
+                                  _rect.X, _rect.Y,
+                                  _rect.Width, _rect.Height,
+                                  ref _hueVector);
+        }
+
+        public override bool Contains(int x, int y)
+        {
+            return true;
+        }
+    }
+
 }

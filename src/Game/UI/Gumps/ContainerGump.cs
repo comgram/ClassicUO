@@ -150,7 +150,7 @@ namespace ClassicUO.Game.UI.Gumps
                 int sW = (int)(_data.Bounds.Width * scale);
                 int sH = (int)(_data.Bounds.Height * scale);
                 int itemSize = (sW - sX - 14) / 6;
-                Add(_grid = new Grid(sX, sY, sW - sX, sH - sY, itemSize, 6, 10));
+                Add(_grid = new Grid(LocalSerial, sX, sY, sW - sX, sH - sY, itemSize, 6, 10));
             }
 
             ContainerGump gg = UIManager.Gumps.OfType<ContainerGump>().FirstOrDefault(s => s.LocalSerial == LocalSerial);
@@ -480,7 +480,7 @@ namespace ClassicUO.Game.UI.Gumps
             private readonly int _itemSize, _rows, _columns;
             private readonly int _scrollbarHeight;
 
-            public Grid(int x, int y, int width, int height, int itemSize, int rows, int columns)
+            public Grid(Serial container, int x, int y, int width, int height, int itemSize, int rows, int columns)
             {
                 CanMove = true;
                 AcceptMouseInput = true;
@@ -517,7 +517,7 @@ namespace ClassicUO.Game.UI.Gumps
 
                 for (int i = 0; i < _gridList.Length; i++)
                 {
-                    Add(_gridList[col * _rows + row] = new GridItem(row * itemSize, col * itemSize, itemSize - 2, itemSize - 2));
+                    Add(_gridList[col * _rows + row] = new GridItem(container, row * itemSize, col * itemSize, itemSize - 2, itemSize - 2));
 
                     row++;
 
@@ -654,10 +654,12 @@ namespace ClassicUO.Game.UI.Gumps
 
         class GridItem : Control
         {
-            private readonly TextureControl _textureControl;
+            private ItemGumpFixed _textureControl;
+            private Serial _containerSerial;
 
-            public GridItem(int x, int y, int width, int height)
+            public GridItem(Serial container, int x, int y, int width, int height)
             {
+                _containerSerial = container;
                 CanMove = true;
                 AcceptMouseInput = true;
                 X = x;
@@ -665,27 +667,16 @@ namespace ClassicUO.Game.UI.Gumps
                 Width = width;
                 Height = height;
                 WantUpdateSize = false;
-
-                _textureControl = new TextureControl() 
-                { 
-                    ScaleTexture = true,
-                    Width = width,
-                    Height = height
-                };
-
-                Add(_textureControl);
             }
 
             public Item Item { get; private set; }
             public bool HasItem => Item != null && !Item.IsDestroyed;
 
-
             public void SetItem(Serial serial)
             {
                 if (serial.IsValid)
                 {
-                    Item = World.Items.Get(serial);
-                    _textureControl.Texture = FileManager.Art.GetTexture(Item.DisplayedGraphic);
+                    SetItem(World.Items.Get(serial));
                 }
                 else
                 {
@@ -693,18 +684,68 @@ namespace ClassicUO.Game.UI.Gumps
                 }
             }
 
+            private void SetItem(Item item)
+            {
+                if (item == null)
+                {
+                    UnsetItem();
+                    return;
+                }
+
+                Item = item;
+                _textureControl = new ItemGumpFixed(Item, Width, Height)
+                {
+                    X = 0,
+                    Y = 0,
+                    Width = Width,
+                    Height = Height,
+                    HighlightOnMouseOver = true,
+                    CanPickUp = true
+                };
+                Add(_textureControl);
+            }
+
             public void UnsetItem()
             {
                 Item = null;
-                _textureControl.Texture = null;
-            }         
+                _textureControl?.Dispose();
+                _textureControl = null;
+            }
+
+            protected override void OnMouseUp(int x, int y, MouseButton button)
+            {
+                if (button != MouseButton.Left)
+                    return;
+
+                GameScene scene = CUOEnviroment.Client.GetScene<GameScene>();
+                if (scene == null)
+                    return;
+
+                if (scene.IsHoldingItem)
+                {
+                    if (!scene.IsHoldingItem || !scene.IsMouseOverUI)
+                        return;
+
+                    Item item = World.Items.Get(_containerSerial);
+
+                    if (item == null)
+                        return;
+
+                    //SetItem(scene.HeldItem.Serial);
+
+                    scene.DropHeldItemToContainer(
+                        item,
+                        X + (Mouse.Position.X - ScreenCoordinateX), 
+                        Y + (Mouse.Position.Y - ScreenCoordinateY));
+                }
+            }
 
             public override bool Draw(UltimaBatcher2D batcher, int x, int y)
             {
                 ResetHueVector();
 
                 base.Draw(batcher, x, y);
-                batcher.DrawRectangle(Textures.GetTexture(MouseIsOver || _textureControl.MouseIsOver ? Color.LimeGreen : Color.Gray), x, y, Width, Height, ref _hueVector);
+                batcher.DrawRectangle(Textures.GetTexture(MouseIsOver || (_textureControl != null && _textureControl.MouseIsOver) ? Color.LimeGreen : Color.Gray), x, y, Width, Height, ref _hueVector);
                 return true;
             }
         }
