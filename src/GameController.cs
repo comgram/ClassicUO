@@ -31,6 +31,7 @@ using Microsoft.Xna.Framework.Graphics;
 using SDL2;
 using static SDL2.SDL;
 
+using Vector2 = System.Numerics.Vector2;
 using Vector3 = Microsoft.Xna.Framework.Vector3;
 
 namespace ClassicUO
@@ -88,8 +89,11 @@ namespace ClassicUO
 
             ImGui.GetIO().Fonts.AddFontDefault();
             _imGuiRenderer.RebuildFontAtlas();
-            _buffer = new RenderTarget2D(GraphicsDevice, _graphicDeviceManager.PreferredBackBufferWidth, _graphicDeviceManager.PreferredBackBufferHeight, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
+            ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 1);
+            //ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0);
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0);
 
+            _buffer = new RenderTarget2D(GraphicsDevice, _graphicDeviceManager.PreferredBackBufferWidth, _graphicDeviceManager.PreferredBackBufferHeight, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
             _bufferPtr = _imGuiRenderer.BindTexture(_buffer);
 
             base.Initialize();
@@ -386,14 +390,46 @@ namespace ClassicUO
         private void DrawLayout()
         {
             ImGui.SetNextWindowPos(System.Numerics.Vector2.Zero);
-            ImGui.SetNextWindowSize(new System.Numerics.Vector2(_graphicDeviceManager.PreferredBackBufferWidth, _graphicDeviceManager.PreferredBackBufferHeight));
-            ImGui.Begin("MainWindow",
-                        ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar);
+            ImGui.SetNextWindowSize(new System.Numerics.Vector2(_graphicDeviceManager.PreferredBackBufferWidth, 
+                                                                _graphicDeviceManager.PreferredBackBufferHeight));
+            ImGuiStylePtr stylePtr = ImGui.GetStyle();
 
+            float prevWinBorderSize = stylePtr.WindowBorderSize;
+            var prevWinPadding = stylePtr.WindowPadding;
+
+
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0);
             ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, System.Numerics.Vector2.Zero);
+
+            ImGui.Begin("MainWindow",
+                        ImGuiWindowFlags.NoMove | 
+                        ImGuiWindowFlags.NoResize | 
+                        ImGuiWindowFlags.NoTitleBar | 
+                        ImGuiWindowFlags.NoScrollbar |
+                        ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBringToFrontOnFocus);
+
             ImGui.Image(_bufferPtr, new System.Numerics.Vector2(_graphicDeviceManager.PreferredBackBufferWidth, _graphicDeviceManager.PreferredBackBufferHeight));
-            ImGui.PopStyleVar();
+
+            // child
+            {
+                ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, prevWinBorderSize);
+                ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, prevWinPadding);
+
+                ImGui.Begin("Child window");
+
+                ImGui.End();
+
+                ImGui.PopStyleVar();
+                ImGui.PopStyleVar();
+            }
+
+            stylePtr.WindowBorderSize = 0;
+            stylePtr.WindowPadding = Vector2.Zero;
+
             ImGui.End();
+
+            ImGui.PopStyleVar();
+            ImGui.PopStyleVar();
         }
 
         private void UpdateWindowCaption(GameTime gameTime)
