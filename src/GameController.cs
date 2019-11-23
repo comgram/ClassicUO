@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,11 +23,15 @@ using ClassicUO.Utility;
 using ClassicUO.Utility.Logging;
 using ClassicUO.Utility.Platforms;
 
+using ImGuiNET;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using SDL2;
 using static SDL2.SDL;
+
+using Vector3 = Microsoft.Xna.Framework.Vector3;
 
 namespace ClassicUO
 {
@@ -39,11 +44,15 @@ namespace ClassicUO
         private readonly UltimaBatcher2D _uoSpriteBatch;
         private readonly float[] _intervalFixedUpdate = new float[2];
         private double _statisticsTimer;
+        private ImGuiRenderer _imGuiRenderer;
+        private IntPtr _bufferPtr;
+
 
         public GameController()
         {
             _graphicDeviceManager = new GraphicsDeviceManager(this);
             _uoSpriteBatch = new UltimaBatcher2D(GraphicsDevice);
+            _imGuiRenderer = new ImGuiRenderer(this);
         }
 
         public Scene Scene => _scene;
@@ -76,6 +85,12 @@ namespace ClassicUO
             TargetElapsedTime = TimeSpan.FromMilliseconds(1000.0f / 250);
 
             SetRefreshRate(Settings.GlobalSettings.FPS);
+
+            ImGui.GetIO().Fonts.AddFontDefault();
+            _imGuiRenderer.RebuildFontAtlas();
+            _buffer = new RenderTarget2D(GraphicsDevice, _graphicDeviceManager.PreferredBackBufferWidth, _graphicDeviceManager.PreferredBackBufferHeight, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
+
+            _bufferPtr = _imGuiRenderer.BindTexture(_buffer);
 
             base.Initialize();
         }
@@ -360,14 +375,26 @@ namespace ClassicUO
             Profiler.EnterContext("OutOfContext");
 
             GraphicsDevice.SetRenderTarget(null);
-            _uoSpriteBatch.Begin();
-            _uoSpriteBatch.Draw2D(_buffer, 0, 0, ref _hueVector);
-            _uoSpriteBatch.End();
+
+            _imGuiRenderer.BeforeLayout(gameTime.TotalGameTime.Seconds);
+            DrawLayout();
+            _imGuiRenderer.AfterLayout();
 
             UpdateWindowCaption(gameTime);
         }
 
-        private Vector3 _hueVector;
+        private void DrawLayout()
+        {
+            ImGui.SetNextWindowPos(System.Numerics.Vector2.Zero);
+            ImGui.SetNextWindowSize(new System.Numerics.Vector2(_graphicDeviceManager.PreferredBackBufferWidth, _graphicDeviceManager.PreferredBackBufferHeight));
+            ImGui.Begin("MainWindow",
+                        ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar);
+
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, System.Numerics.Vector2.Zero);
+            ImGui.Image(_bufferPtr, new System.Numerics.Vector2(_graphicDeviceManager.PreferredBackBufferWidth, _graphicDeviceManager.PreferredBackBufferHeight));
+            ImGui.PopStyleVar();
+            ImGui.End();
+        }
 
         private void UpdateWindowCaption(GameTime gameTime)
         {
