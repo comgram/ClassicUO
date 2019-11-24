@@ -384,7 +384,7 @@ namespace ClassicUO
 
             GraphicsDevice.SetRenderTarget(null);
 
-            _imGuiRenderer.BeforeLayout(gameTime.TotalGameTime.Seconds);
+            _imGuiRenderer.BeforeLayout((float) gameTime.ElapsedGameTime.TotalSeconds);
             DrawLayout();
             _imGuiRenderer.AfterLayout();
 
@@ -431,6 +431,8 @@ namespace ClassicUO
                 ImGui.Begin("Child window##");
 
                 ImGui.InputText("XX", _textBuffer, (uint) _textBuffer.Length);
+
+                ImGui.Text("FPS: " + ImGui.GetIO().Framerate);
                
                 ImGui.End();
 

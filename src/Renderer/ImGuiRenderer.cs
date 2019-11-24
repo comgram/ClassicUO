@@ -125,7 +125,6 @@ namespace ClassicUO.Renderer
         public virtual void BeforeLayout(float seconds)
         {
             ImGui.GetIO().DeltaTime = seconds;
-
             UpdateInput();
 
             ImGui.NewFrame();
