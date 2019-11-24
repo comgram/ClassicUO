@@ -37,6 +37,8 @@ using ClassicUO.IO;
 using ClassicUO.Renderer;
 using ClassicUO.Utility.Collections;
 
+using ImGuiNET;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -538,6 +540,11 @@ namespace ClassicUO.Game
 
         private ushort AssignGraphicByState()
         {
+            if (ImGui.GetIO().WantCaptureMouse)
+            {
+                return _cursorData[0, 9];
+            }
+
             int war = World.InGame && World.Player.InWarMode ? 1 : 0;
 
             if (TargetManager.IsTargeting)

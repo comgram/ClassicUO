@@ -39,6 +39,8 @@ using ClassicUO.Utility;
 using ClassicUO.Utility.Collections;
 using ClassicUO.Utility.Logging;
 
+using ImGuiNET;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -968,6 +970,11 @@ namespace ClassicUO.Game.Managers
 
         private static void HandleMouseInput()
         {
+            if (ImGui.GetIO().WantCaptureMouse)
+            {
+                MouseOverControl = null;
+            }
+
             Control gump = GetMouseOverControl(Mouse.Position);
 
             if (MouseOverControl != null && gump != MouseOverControl)
