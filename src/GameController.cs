@@ -436,6 +436,8 @@ namespace ClassicUO
                
                 ImGui.End();
 
+                DrawLauncher();
+
                 ImGui.PopStyleVar();
                 ImGui.PopStyleVar();
             }
@@ -447,6 +449,62 @@ namespace ClassicUO
 
             ImGui.PopStyleVar();
             ImGui.PopStyleVar();
+        }
+
+
+        private int _currentItemListBoxProfile;
+        private string[] _listBoxItems = Enumerable.Repeat("", 100).ToArray();
+        private byte[] _profileName = new byte[32], _username = new byte[32], _password = new byte[32], _uoPath = new byte[256];
+        private bool _cryptPassword, _saveCredentials;
+
+        private void DrawLauncher()
+        {
+            ImGui.SetNextWindowPos(System.Numerics.Vector2.Zero);
+            ImGui.SetNextWindowSize(new System.Numerics.Vector2(_graphicDeviceManager.PreferredBackBufferWidth,
+                                                                _graphicDeviceManager.PreferredBackBufferHeight));
+
+            //ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0);
+            //ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, System.Numerics.Vector2.Zero);
+
+            ImGui.Begin("ClassicUO Configuration",
+                        ImGuiWindowFlags.NoMove |
+                        ImGuiWindowFlags.NoResize |
+                        ImGuiWindowFlags.NoTitleBar |
+                        ImGuiWindowFlags.NoScrollbar |
+                        ImGuiWindowFlags.NoSavedSettings |
+                        ImGuiWindowFlags.NoCollapse);
+
+
+            {
+                //ImGui.ListBoxHeader("Profile");
+                ImGui.PushItemWidth(100);
+                ImGui.ListBox("", ref _currentItemListBoxProfile, _listBoxItems, 100);
+                ImGui.PopItemWidth();
+
+                if (ImGui.CollapsingHeader("Profile Configuration"))
+                {
+                    ImGui.InputText("Profile name", _profileName, (uint) _profileName.Length);
+                    ImGui.Dummy(new Vector2(0, 20));
+                    ImGui.InputText("Username", _username, (uint) _username.Length);
+                    ImGui.InputText("Password", _password, (uint) _password.Length);
+                    ImGui.SameLine();
+                    ImGui.Checkbox("Crypt password", ref _cryptPassword);
+                    ImGui.Checkbox("Save credentials", ref _saveCredentials);
+                    ImGui.InputText("UO Path", _uoPath, (uint) _uoPath.Length);
+                    ImGui.SameLine();
+                    ImGui.SmallButton("...");
+                }
+
+
+
+            }
+
+
+            ImGui.End();
+
+
+            //ImGui.PopStyleVar();
+            //ImGui.PopStyleVar();
         }
 
         private void UpdateWindowCaption(GameTime gameTime)
