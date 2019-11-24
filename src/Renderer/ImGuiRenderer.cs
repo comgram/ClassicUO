@@ -217,6 +217,9 @@ namespace ClassicUO.Renderer
         /// </summary>
         protected virtual void UpdateInput()
         {
+            if (!_game.IsActive)
+                return;
+
             var io = ImGui.GetIO();
 
             var mouse = Mouse.GetState();
