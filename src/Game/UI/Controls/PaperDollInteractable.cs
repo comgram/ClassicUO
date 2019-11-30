@@ -100,11 +100,13 @@ namespace ClassicUO.Game.UI.Controls
                     }
 
                     // this fix is necessary to clean paperdoll
-                    if (Mobile.HasEquipment && item.Layer >= 0 && (int)item.Layer < Mobile.Equipment.Length)
-                        Mobile.Equipment[(int)item.Layer] = null;
+                    //if (item.Layer >= 0 && (int)item.Layer < Mobile.Equipment.Length)
+                    //    Mobile.FindItemByLayer(item.Layer] = null;
 
                     _pgumps[(int )item.Layer]?.Dispose();
                     _pgumps[(int) item.Layer] = null;
+
+                    item.Layer = 0;
                 }
             }
 
@@ -157,7 +159,7 @@ namespace ClassicUO.Game.UI.Controls
                 _fakeItem = null;
                 UpdateEntity();
             }
-            else if (item != null && _mobile.Equipment[item.ItemData.Layer] == null)
+            else if (item != null && _mobile.FindItemByLayer((Layer) item.ItemData.Layer) == null)
             {
                 _fakeItem = item;
                 UpdateEntity();
@@ -246,7 +248,6 @@ namespace ClassicUO.Game.UI.Controls
                 }
 
 
-                if (Mobile.HasEquipment)
                 {
                     ItemGumpPaperdoll g = null;
 
@@ -254,8 +255,8 @@ namespace ClassicUO.Game.UI.Controls
                     bool invertTunicWithArms = false;
                     bool isQuiver = false;
 
-                    var torso = Mobile.Equipment[(int) Layer.Torso];
-                    var quiver = Mobile.Equipment[(int) Layer.Cloak];
+                    var torso = Mobile.FindItemByLayer( Layer.Torso);
+                    var quiver = Mobile.FindItemByLayer( Layer.Cloak);
 
                     if (torso == null && _fakeItem != null && _fakeItem.ItemData.Layer == (int)Layer.Torso)
                     {
@@ -312,7 +313,7 @@ namespace ClassicUO.Game.UI.Controls
 
 
 
-                        Item item = _mobile.Equipment[(int) layerIndex];
+                        Item item = _mobile.FindItemByLayer( layerIndex);
                         bool isfake = false;
                         bool canPickUp = World.InGame && 
                                          !World.Player.IsDead && 
@@ -387,7 +388,7 @@ namespace ClassicUO.Game.UI.Controls
                                 goto case Layer.Arms;
 
                             case Layer.Arms:
-                                var robe = _mobile.Equipment[(int)Layer.Robe];
+                                var robe = _mobile.FindItemByLayer(Layer.Robe);
 
                                 if (robe != null)
                                 {
@@ -399,7 +400,7 @@ namespace ClassicUO.Game.UI.Controls
                                 break;
 
                             case Layer.Helmet:
-                                robe = _mobile.Equipment[(int) Layer.Robe];
+                                robe = _mobile.FindItemByLayer( Layer.Robe);
 
                                 if (robe != null)
                                 {
@@ -455,9 +456,8 @@ namespace ClassicUO.Game.UI.Controls
                 }
             }
 
-            if (_mobile.HasEquipment)
             {
-                Item backpack = _mobile.Equipment[(int) Layer.Backpack];
+                Item backpack = _mobile.FindItemByLayer( Layer.Backpack);
 
                 if (backpack != null)
                 {
@@ -489,7 +489,7 @@ namespace ClassicUO.Game.UI.Controls
         {
             get
             {
-                if (_mobile != null && _mobile.HasEquipment)
+                if (_mobile != null)
                 {
                     var gump = _pgumps[(int)Layer.Backpack];
                     if (gump != null && !gump.IsDisposed)
@@ -518,9 +518,11 @@ namespace ClassicUO.Game.UI.Controls
 
         private void OnDoubleclickBackpackGump(object sender, EventArgs args)
         {
-            if (_mobile != null && !_mobile.IsDestroyed && _mobile.HasEquipment)
+            if (_mobile != null && !_mobile.IsDestroyed)
             {
-                Item backpack = _mobile.Equipment[(int) Layer.Backpack];
+                Item backpack = _mobile.FindItemByLayer( Layer.Backpack);
+                if (backpack == null)
+                    return;
 
                 ContainerGump backpackGump = UIManager.GetGump<ContainerGump>(backpack);
 

@@ -176,7 +176,7 @@ namespace ClassicUO.Game.UI.Gumps
 
             if (gg == null)
             {
-                if (UIManager.GetGumpCachePosition(LocalSerial, out Point location) && item.Serial == World.Player.Equipment[(int) Layer.Backpack])
+                if (UIManager.GetGumpCachePosition(LocalSerial, out Point location) && item.Serial == World.Player.FindItemByLayer( Layer.Backpack))
                     Location = location;
                 else
                 {
@@ -414,7 +414,8 @@ namespace ClassicUO.Game.UI.Gumps
 
         private void SetPositionNearGameObject(Graphic g, Item item)
         {
-            if (World.Player.Equipment[(int)Layer.Bank] != null && item.Serial == World.Player.Equipment[(int)Layer.Bank])
+            Item bank = World.Player.FindItemByLayer(Layer.Bank);
+            if (bank != null && item.Serial == bank)
             {
                 // open bank near player
                 X = World.Player.RealScreenPosition.X + ProfileManager.Current.GameWindowPosition.X + 40;
@@ -478,7 +479,7 @@ namespace ClassicUO.Game.UI.Gumps
                 item.Items.Added -= ItemsOnAdded;
                 item.Items.Removed -= ItemsOnRemoved;
 
-                if (World.Player != null && item == World.Player.Equipment[(int) Layer.Backpack]) UIManager.SavePosition(item, Location);
+                if (World.Player != null && item == World.Player.FindItemByLayer( Layer.Backpack)) UIManager.SavePosition(item, Location);
 
                 foreach (Item child in item.Items)
                 {

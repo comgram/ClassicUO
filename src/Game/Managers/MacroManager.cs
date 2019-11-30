@@ -420,7 +420,7 @@ namespace ClassicUO.Game.Managers
                                     break;
 
                                 case MacroSubType.Backpack:
-                                    Item backpack = World.Player.Equipment[(int) Layer.Backpack];
+                                    Item backpack = World.Player.FindItemByLayer(Layer.Backpack);
 
                                     if (backpack != null)
                                         GameActions.DoubleClick(backpack);
@@ -748,12 +748,12 @@ namespace ClassicUO.Game.Managers
                     break;
 
                 case MacroType.UseItemInHand:
-                    Item itemInLeftHand = World.Player.Equipment[(int)Layer.OneHanded];
+                    Item itemInLeftHand = World.Player.FindItemByLayer(Layer.OneHanded);
                     if (itemInLeftHand != null)
                         GameActions.DoubleClick(itemInLeftHand.Serial);
                     else
                     {
-                        Item itemInRightHand = World.Player.Equipment[(int)Layer.TwoHanded];
+                        Item itemInRightHand = World.Player.FindItemByLayer(Layer.TwoHanded);
                         if (itemInRightHand != null)
                             GameActions.DoubleClick(itemInRightHand.Serial);
                     }
@@ -821,12 +821,12 @@ namespace ClassicUO.Game.Managers
                     }
                     else
                     {
-                        Item backpack = World.Player.Equipment[(int) Layer.Backpack];
+                        Item backpack = World.Player.FindItemByLayer( Layer.Backpack);
 
                         if (backpack == null)
                             break;
 
-                        Item item = World.Player.Equipment[(int) Layer.OneHanded + handIndex];
+                        Item item = World.Player.FindItemByLayer( (Layer)  ((int) Layer.OneHanded + handIndex));
 
                         if (item != null)
                         {

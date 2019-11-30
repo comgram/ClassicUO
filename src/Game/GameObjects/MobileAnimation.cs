@@ -1020,7 +1020,7 @@ namespace ClassicUO.Game.GameObjects
                 default:
 
                 {
-                    Item hand2 = mobile.HasEquipment ? mobile.Equipment[(int) Layer.TwoHanded] : null;
+                    Item hand2 = mobile.FindItemByLayer(Layer.TwoHanded);
 
                     if (!isWalking)
                     {
@@ -1037,7 +1037,7 @@ namespace ClassicUO.Game.GameObjects
                             else
                             {
                                 ushort[] handAnimIDs = {0, 0};
-                                Item hand1 = mobile.HasEquipment ? mobile.Equipment[(int) Layer.OneHanded] : null;
+                                Item hand1 = mobile.FindItemByLayer(Layer.OneHanded);
 
                                 if (hand1 != null)
                                     handAnimIDs[0] = hand1.ItemData.AnimID;

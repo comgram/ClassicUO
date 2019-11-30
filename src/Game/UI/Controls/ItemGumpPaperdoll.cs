@@ -205,7 +205,7 @@ namespace ClassicUO.Game.UI.Controls
         //        {
         //            if (gs == null || !gs.IsHoldingItem || !gs.IsMouseOverUI) return;
 
-        //            if (Item == Mobile.Equipment[(int) Layer.Backpack])
+        //            if (Item == Mobile.FindItemByLayer( Layer.Backpack])
         //                gs.DropHeldItemToContainer(Item);
         //            else
         //                gs.WearHeldItem(Mobile);

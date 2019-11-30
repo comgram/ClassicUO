@@ -182,7 +182,7 @@ namespace ClassicUO.Game.GameObjects
             FileManager.Animations.Direction = dir;
             FileManager.Animations.AnimGroup = animGroup;
 
-            Item mount = HasEquipment ? Equipment[(int) Layer.Mount] : null;
+            Item mount = FindItemByLayer(Layer.Mount);
 
             if (isHuman && mount != null)
             {
@@ -228,14 +228,12 @@ namespace ClassicUO.Game.GameObjects
 
             DrawInternal(batcher, this, null, drawX, drawY, mirror, ref animIndex, false, graphic, isHuman);
 
-            if (HasEquipment)
             {
-                var equip = Equipment;
                 for (int i = 0; i < Constants.USED_LAYER_COUNT; i++)
                 {
                     Layer layer = LayerOrder.UsedLayers[dir, i];
 
-                    Item item = equip[(int)layer];
+                    Item item = FindItemByLayer(layer);
 
                     if (item == null)
                         continue;
@@ -505,20 +503,17 @@ namespace ClassicUO.Game.GameObjects
 
         internal static bool IsCovered(Mobile mobile, Layer layer)
         {
-            if (!mobile.HasEquipment)
-                return false;
-
             switch (layer)
             {
                 case Layer.Shoes:
-                    Item pants = mobile.Equipment[(int) Layer.Pants];
+                    Item pants = mobile.FindItemByLayer(Layer.Pants);
                     Item robe;
 
-                    if (mobile.HasEquipment && mobile.Equipment[(int) Layer.Legs] != null || pants != null && (pants.Graphic == 0x1411 || pants.Graphic == 0x141A))
+                    if (mobile.FindItemByLayer(Layer.Legs) != null || pants != null && (pants.Graphic == 0x1411 || pants.Graphic == 0x141A))
                         return true;
                     else
                     {
-                        robe = mobile.Equipment[(int) Layer.Robe];
+                        robe = mobile.FindItemByLayer(Layer.Robe);
 
                         if (pants != null && (pants.Graphic == 0x0513 || pants.Graphic == 0x0514) || robe != null && robe.Graphic == 0x0504)
                             return true;
@@ -528,15 +523,15 @@ namespace ClassicUO.Game.GameObjects
 
                 case Layer.Pants:
                     Item skirt;
-                    robe = mobile.Equipment[(int) Layer.Robe];
-                    pants = mobile.Equipment[(int) Layer.Pants];
+                    robe = mobile.FindItemByLayer( Layer.Robe);
+                    pants = mobile.FindItemByLayer( Layer.Pants);
 
-                    if (mobile.Equipment[(int) Layer.Legs] != null || robe != null && robe.Graphic == 0x0504)
+                    if (mobile.FindItemByLayer( Layer.Legs) != null || robe != null && robe.Graphic == 0x0504)
                         return true;
 
                     if (pants != null && (pants.Graphic == 0x01EB || pants.Graphic == 0x03E5 || pants.Graphic == 0x03eB))
                     {
-                        skirt = mobile.Equipment[(int) Layer.Skirt];
+                        skirt = mobile.FindItemByLayer( Layer.Skirt);
 
                         if (skirt != null && skirt.Graphic != 0x01C7 && skirt.Graphic != 0x01E4)
                             return true;
@@ -548,8 +543,8 @@ namespace ClassicUO.Game.GameObjects
                     break;
 
                 case Layer.Tunic:
-                    robe = mobile.Equipment[(int) Layer.Robe];
-                    Item tunic = mobile.Equipment[(int) Layer.Tunic];
+                    robe = mobile.FindItemByLayer( Layer.Robe);
+                    Item tunic = mobile.FindItemByLayer( Layer.Tunic);
 
                     /*if (robe != null && robe.Graphic != 0)
                         return true;
@@ -560,13 +555,13 @@ namespace ClassicUO.Game.GameObjects
                     break;
 
                 case Layer.Torso:
-                    robe = mobile.Equipment[(int) Layer.Robe];
+                    robe = mobile.FindItemByLayer( Layer.Robe);
 
                     if (robe != null && robe.Graphic != 0 && robe.Graphic != 0x9985 && robe.Graphic != 0x9986)
                         return true;
                     else
                     {
-                        Item torso = mobile.Equipment[(int) Layer.Torso];
+                        Item torso = mobile.FindItemByLayer( Layer.Torso);
 
                         if (torso != null && (torso.Graphic == 0x782A || torso.Graphic == 0x782B))
                             return true;
@@ -575,13 +570,13 @@ namespace ClassicUO.Game.GameObjects
                     break;
 
                 case Layer.Arms:
-                    robe = mobile.Equipment[(int) Layer.Robe];
+                    robe = mobile.FindItemByLayer( Layer.Robe);
 
                     return robe != null && robe.Graphic != 0 && robe.Graphic != 0x9985 && robe.Graphic != 0x9986;
 
                 case Layer.Helmet:
                 case Layer.Hair:
-                    robe = mobile.Equipment[(int) Layer.Robe];
+                    robe = mobile.FindItemByLayer( Layer.Robe);
 
                     if (robe != null)
                     {
@@ -607,7 +602,7 @@ namespace ClassicUO.Game.GameObjects
 
                     break;
                 /*case Layer.Skirt:
-                    skirt = mobile.Equipment[(int) Layer.Skirt];
+                    skirt = mobile.FindItemByLayer( Layer.Skirt];
 
                     break;*/
             }

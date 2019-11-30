@@ -35,7 +35,6 @@ namespace ClassicUO.Game.GameObjects
     internal abstract class Entity : GameObject
     {
         private Direction _direction;
-        private Item[] _equipment;
 
         protected Entity(Serial serial)
         {
@@ -45,18 +44,10 @@ namespace ClassicUO.Game.GameObjects
 
 
 
-
         protected long LastAnimationChangeTime;
 
         public EntityCollection<Item> Items { get; protected set; }
 
-        public bool HasEquipment => _equipment != null;
-
-        public Item[] Equipment
-        {
-            get => _equipment ?? (_equipment = new Item[(int) Layer.Bank + 0x11]);
-            set => _equipment = value;
-        }
 
         public Serial Serial;
         public bool IsClicked;
@@ -184,12 +175,6 @@ namespace ClassicUO.Game.GameObjects
         public void ProcessDelta()
         {
             Items.ProcessDelta();
-        }
-
-        public override void Destroy()
-        {
-            _equipment = null;
-            base.Destroy();
         }
 
 

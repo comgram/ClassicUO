@@ -45,197 +45,197 @@ namespace ClassicUO.Game
         public static GameObject CorpseObject;
 
 
-        public static bool IsPointInMobile(Mobile mobile, int xx, int yy)
-        {
-            bool mirror = false;
-            byte dir = (byte) mobile.GetDirectionForAnimation();
-            FileManager.Animations.GetAnimDirection(ref dir, ref mirror);
+        //public static bool IsPointInMobile(Mobile mobile, int xx, int yy)
+        //{
+        //    bool mirror = false;
+        //    byte dir = (byte) mobile.GetDirectionForAnimation();
+        //    FileManager.Animations.GetAnimDirection(ref dir, ref mirror);
 
 
-            sbyte animIndex = mobile.AnimIndex;
+        //    sbyte animIndex = mobile.AnimIndex;
 
-            for (int i = -2; i < Constants.USED_LAYER_COUNT; i++)
-            {
-                Layer layer = i == -2 ? Layer.Invalid : i == -1 ? Layer.Mount : LayerOrder.UsedLayers[dir, i];
+        //    for (int i = -2; i < Constants.USED_LAYER_COUNT; i++)
+        //    {
+        //        Layer layer = i == -2 ? Layer.Invalid : i == -1 ? Layer.Mount : LayerOrder.UsedLayers[dir, i];
 
-                ushort graphic;
+        //        ushort graphic;
 
-                if (layer == Layer.Invalid)
-                    graphic = mobile.GetGraphicForAnimation();
-                else if (mobile.HasEquipment)
-                {
-                    Item item = mobile.Equipment[(int) layer];
+        //        if (layer == Layer.Invalid)
+        //            graphic = mobile.GetGraphicForAnimation();
+        //        else
+        //        {
+        //            Item item = mobile.FindItemByLayer(layer);
 
-                    if (item == null)
-                        continue;
+        //            if (item == null)
+        //                continue;
 
-                    if (layer == Layer.Mount)
-                        graphic = item.GetGraphicForAnimation();
-                    else if (item.ItemData.AnimID != 0)
-                    {
-                        if (Mobile.IsCovered(mobile, layer))
-                            continue;
+        //            if (layer == Layer.Mount)
+        //                graphic = item.GetGraphicForAnimation();
+        //            else if (item.ItemData.AnimID != 0)
+        //            {
+        //                if (Mobile.IsCovered(mobile, layer))
+        //                    continue;
 
-                        graphic = item.ItemData.AnimID;
+        //                graphic = item.ItemData.AnimID;
 
-                        if (FileManager.Animations.EquipConversions.TryGetValue(mobile.Graphic, out Dictionary<ushort, EquipConvData> map))
-                        {
-                            if (map.TryGetValue(item.ItemData.AnimID, out EquipConvData data))
-                                graphic = data.Graphic;
-                        }
-                    }
-                    else
-                        continue;
-                }
-                else
-                    continue;
-
-
-                byte animGroup = Mobile.GetGroupForAnimation(mobile, graphic, layer == Layer.Invalid);
-
-                ushort hue = 0;
-                ref var direction = ref FileManager.Animations.GetBodyAnimationGroup(ref graphic, ref animGroup, ref hue, true).Direction[dir];
-
-                FileManager.Animations.AnimID = graphic;
-                FileManager.Animations.AnimGroup = animGroup;
-                FileManager.Animations.Direction = dir;
-
-                if ((direction.FrameCount == 0 || direction.Frames == null) && !FileManager.Animations.LoadDirectionGroup(ref direction))
-                    continue;
-
-                int fc = direction.FrameCount;
-
-                if (fc != 0 && animIndex >= fc)
-                    animIndex = 0;
-
-                if (animIndex < direction.FrameCount)
-                {
-                    AnimationFrameTexture frame = direction.Frames[animIndex];
-
-                    if (frame == null || frame.IsDisposed)
-                        continue;
-
-                    int drawX;
-
-                    int drawCenterY = frame.CenterY;
-                    int yOff = ((int) mobile.Offset.Z >> 2) - 22 - (int) (mobile.Offset.Y - mobile.Offset.Z - 3);
-                    int drawY = drawCenterY + yOff;
-
-                    if (mirror)
-                        drawX = -22 + (int) mobile.Offset.X;
-                    else
-                        drawX = -22 - (int) mobile.Offset.X;
-
-                    int x = drawX + frame.CenterX;
-                    int y = -drawY - (frame.Height + frame.CenterY) + drawCenterY;
-
-                    if (mirror)
-                        x = xx + x + 44 - TranslatedMousePositionByViewport.X;
-                    else
-                        x = TranslatedMousePositionByViewport.X - xx + x;
-
-                    y = TranslatedMousePositionByViewport.Y - yy - y;
-
-                    if (frame.Contains(x, y))
-                        return true;
-                }
-            }
+        //                if (FileManager.Animations.EquipConversions.TryGetValue(mobile.Graphic, out Dictionary<ushort, EquipConvData> map))
+        //                {
+        //                    if (map.TryGetValue(item.ItemData.AnimID, out EquipConvData data))
+        //                        graphic = data.Graphic;
+        //                }
+        //            }
+        //            else
+        //                continue;
+        //        }
+        //        else
+        //            continue;
 
 
-            return false;
-        }
+        //        byte animGroup = Mobile.GetGroupForAnimation(mobile, graphic, layer == Layer.Invalid);
 
-        public static bool IsPointInCorpse(Item corpse, int xx, int yy)
-        {
-            if (corpse == null || World.CorpseManager.Exists(corpse.Serial, 0))
-                return false;
+        //        ushort hue = 0;
+        //        ref var direction = ref FileManager.Animations.GetBodyAnimationGroup(ref graphic, ref animGroup, ref hue, true).Direction[dir];
 
-            byte dir = (byte) ((byte) corpse.Layer & 0x7F & 7);
-            bool mirror = false;
-            FileManager.Animations.GetAnimDirection(ref dir, ref mirror);
-            FileManager.Animations.Direction = dir;
-            byte animIndex = (byte) corpse.AnimIndex;
+        //        FileManager.Animations.AnimID = graphic;
+        //        FileManager.Animations.AnimGroup = animGroup;
+        //        FileManager.Animations.Direction = dir;
 
-            for (int i = -1; i < Constants.USED_LAYER_COUNT; i++)
-            {
-                Layer layer = i == -1 ? Layer.Mount : LayerOrder.UsedLayers[dir, i];
+        //        if ((direction.FrameCount == 0 || direction.Frames == null) && !FileManager.Animations.LoadDirectionGroup(ref direction))
+        //            continue;
 
-                ushort graphic;
-                ushort color = 0;
+        //        int fc = direction.FrameCount;
 
-                if (layer == Layer.Invalid)
-                {
-                    graphic = corpse.GetGraphicForAnimation();
-                    FileManager.Animations.AnimGroup = FileManager.Animations.GetDieGroupIndex(graphic, corpse.UsedLayer);
-                }
-                else if (corpse.HasEquipment && MathHelper.InRange(corpse.Amount, 0x0190, 0x0193) ||
-                         MathHelper.InRange(corpse.Amount, 0x00B7, 0x00BA) ||
-                         MathHelper.InRange(corpse.Amount, 0x025D, 0x0260) ||
-                         MathHelper.InRange(corpse.Amount, 0x029A, 0x029B) ||
-                         MathHelper.InRange(corpse.Amount, 0x02B6, 0x02B7) ||
-                         corpse.Amount == 0x03DB || corpse.Amount == 0x03DF || corpse.Amount == 0x03E2 || corpse.Amount == 0x02E8 || corpse.Amount == 0x02E9)
-                {
-                    Item itemEquip = corpse.Equipment[(int) layer];
+        //        if (fc != 0 && animIndex >= fc)
+        //            animIndex = 0;
 
-                    if (itemEquip == null)
-                        continue;
+        //        if (animIndex < direction.FrameCount)
+        //        {
+        //            AnimationFrameTexture frame = direction.Frames[animIndex];
 
-                    graphic = itemEquip.ItemData.AnimID;
+        //            if (frame == null || frame.IsDisposed)
+        //                continue;
 
-                    if (FileManager.Animations.EquipConversions.TryGetValue(corpse.Amount, out Dictionary<ushort, EquipConvData> map))
-                    {
-                        if (map.TryGetValue(graphic, out EquipConvData data))
-                            graphic = data.Graphic;
-                    }
-                }
-                else
-                    continue;
+        //            int drawX;
+
+        //            int drawCenterY = frame.CenterY;
+        //            int yOff = ((int) mobile.Offset.Z >> 2) - 22 - (int) (mobile.Offset.Y - mobile.Offset.Z - 3);
+        //            int drawY = drawCenterY + yOff;
+
+        //            if (mirror)
+        //                drawX = -22 + (int) mobile.Offset.X;
+        //            else
+        //                drawX = -22 - (int) mobile.Offset.X;
+
+        //            int x = drawX + frame.CenterX;
+        //            int y = -drawY - (frame.Height + frame.CenterY) + drawCenterY;
+
+        //            if (mirror)
+        //                x = xx + x + 44 - TranslatedMousePositionByViewport.X;
+        //            else
+        //                x = TranslatedMousePositionByViewport.X - xx + x;
+
+        //            y = TranslatedMousePositionByViewport.Y - yy - y;
+
+        //            if (frame.Contains(x, y))
+        //                return true;
+        //        }
+        //    }
 
 
-                byte animGroup = FileManager.Animations.AnimGroup;
+        //    return false;
+        //}
 
-                var gr = layer == Layer.Invalid
-                             ? FileManager.Animations.GetCorpseAnimationGroup(ref graphic, ref animGroup, ref color)
-                             : FileManager.Animations.GetBodyAnimationGroup(ref graphic, ref animGroup, ref color);
+        //public static bool IsPointInCorpse(Item corpse, int xx, int yy)
+        //{
+        //    if (corpse == null || World.CorpseManager.Exists(corpse.Serial, 0))
+        //        return false;
 
-                ref var direction = ref gr.Direction[FileManager.Animations.Direction];
+        //    byte dir = (byte) ((byte) corpse.Layer & 0x7F & 7);
+        //    bool mirror = false;
+        //    FileManager.Animations.GetAnimDirection(ref dir, ref mirror);
+        //    FileManager.Animations.Direction = dir;
+        //    byte animIndex = (byte) corpse.AnimIndex;
 
-                if ((direction.FrameCount == 0 || direction.Frames == null) && !FileManager.Animations.LoadDirectionGroup(ref direction))
-                    continue;
+        //    for (int i = -1; i < Constants.USED_LAYER_COUNT; i++)
+        //    {
+        //        Layer layer = i == -1 ? Layer.Mount : LayerOrder.UsedLayers[dir, i];
 
-                int fc = direction.FrameCount;
+        //        ushort graphic;
+        //        ushort color = 0;
 
-                if (fc > 0 && animIndex >= fc)
-                    animIndex = (byte) (fc - 1);
+        //        if (layer == Layer.Invalid)
+        //        {
+        //            graphic = corpse.GetGraphicForAnimation();
+        //            FileManager.Animations.AnimGroup = FileManager.Animations.GetDieGroupIndex(graphic, corpse.UsedLayer);
+        //        }
+        //        else if (corpse.HasEquipment && MathHelper.InRange(corpse.Amount, 0x0190, 0x0193) ||
+        //                 MathHelper.InRange(corpse.Amount, 0x00B7, 0x00BA) ||
+        //                 MathHelper.InRange(corpse.Amount, 0x025D, 0x0260) ||
+        //                 MathHelper.InRange(corpse.Amount, 0x029A, 0x029B) ||
+        //                 MathHelper.InRange(corpse.Amount, 0x02B6, 0x02B7) ||
+        //                 corpse.Amount == 0x03DB || corpse.Amount == 0x03DF || corpse.Amount == 0x03E2 || corpse.Amount == 0x02E8 || corpse.Amount == 0x02E9)
+        //        {
+        //            Item itemEquip = corpse.FindItemByLayer( layer];
 
-                if (animIndex < direction.FrameCount)
-                {
-                    AnimationFrameTexture frame = direction.Frames[animIndex]; // FileManager.Animations.GetTexture(direction.FramesHashes[animIndex]);
+        //            if (itemEquip == null)
+        //                continue;
 
-                    if (frame == null || frame.IsDisposed)
-                        continue;
+        //            graphic = itemEquip.ItemData.AnimID;
 
-                    int drawCenterY = frame.CenterY;
-                    const int drawX = -22;
-                    int drawY = drawCenterY - 22;
-                    drawY -= 3;
-                    int x = drawX + frame.CenterX;
-                    int y = -drawY - (frame.Height + frame.CenterY) + drawCenterY;
+        //            if (FileManager.Animations.EquipConversions.TryGetValue(corpse.Amount, out Dictionary<ushort, EquipConvData> map))
+        //            {
+        //                if (map.TryGetValue(graphic, out EquipConvData data))
+        //                    graphic = data.Graphic;
+        //            }
+        //        }
+        //        else
+        //            continue;
 
-                    if (mirror)
-                        x = xx + x + 44 - TranslatedMousePositionByViewport.X;
-                    else
-                        x = TranslatedMousePositionByViewport.X - xx + x;
 
-                    y = TranslatedMousePositionByViewport.Y - yy + y;
+        //        byte animGroup = FileManager.Animations.AnimGroup;
 
-                    if (frame.Contains(x, y))
-                        return true;
-                }
-            }
+        //        var gr = layer == Layer.Invalid
+        //                     ? FileManager.Animations.GetCorpseAnimationGroup(ref graphic, ref animGroup, ref color)
+        //                     : FileManager.Animations.GetBodyAnimationGroup(ref graphic, ref animGroup, ref color);
 
-            return false;
-        }
+        //        ref var direction = ref gr.Direction[FileManager.Animations.Direction];
+
+        //        if ((direction.FrameCount == 0 || direction.Frames == null) && !FileManager.Animations.LoadDirectionGroup(ref direction))
+        //            continue;
+
+        //        int fc = direction.FrameCount;
+
+        //        if (fc > 0 && animIndex >= fc)
+        //            animIndex = (byte) (fc - 1);
+
+        //        if (animIndex < direction.FrameCount)
+        //        {
+        //            AnimationFrameTexture frame = direction.Frames[animIndex]; // FileManager.Animations.GetTexture(direction.FramesHashes[animIndex]);
+
+        //            if (frame == null || frame.IsDisposed)
+        //                continue;
+
+        //            int drawCenterY = frame.CenterY;
+        //            const int drawX = -22;
+        //            int drawY = drawCenterY - 22;
+        //            drawY -= 3;
+        //            int x = drawX + frame.CenterX;
+        //            int y = -drawY - (frame.Height + frame.CenterY) + drawCenterY;
+
+        //            if (mirror)
+        //                x = xx + x + 44 - TranslatedMousePositionByViewport.X;
+        //            else
+        //                x = TranslatedMousePositionByViewport.X - xx + x;
+
+        //            y = TranslatedMousePositionByViewport.Y - yy + y;
+
+        //            if (frame.Contains(x, y))
+        //                return true;
+        //        }
+        //    }
+
+        //    return false;
+        //}
 
 
         [MethodImpl(256)]

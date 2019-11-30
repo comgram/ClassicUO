@@ -185,7 +185,7 @@ namespace ClassicUO.Game.GameObjects
 
         public Item FindBandage()
         {
-            Item backpack = Equipment[(int) Layer.Backpack];
+            Item backpack = FindItemByLayer(Layer.Backpack);
             Item item = null;
 
             if (backpack != null)
@@ -196,7 +196,7 @@ namespace ClassicUO.Game.GameObjects
 
         public Item FindItemByGraphic(ushort graphic)
         {
-            Item backpack = Equipment[(int)Layer.Backpack];
+            Item backpack = FindItemByLayer(Layer.Backpack);
 
             if (backpack != null)
             {
@@ -279,13 +279,13 @@ namespace ClassicUO.Game.GameObjects
         {
             ushort equippedGraphic = 0;
 
-            Item layerObject = Equipment[(int) Layer.OneHanded];
+            Item layerObject = FindItemByLayer(Layer.OneHanded);
 
             if (layerObject != null)
                 equippedGraphic = layerObject.Graphic;
             else
             {
-                layerObject = Equipment[(int) Layer.TwoHanded];
+                layerObject = FindItemByLayer(Layer.TwoHanded);
 
                 if (layerObject != null)
                     equippedGraphic = layerObject.Graphic;
@@ -1308,7 +1308,7 @@ namespace ClassicUO.Game.GameObjects
 
         public void CloseBank()
         {
-            var bank = Equipment[(int) Layer.Bank];
+            var bank = FindItemByLayer(Layer.Bank);
 
             if (bank != null)
             {

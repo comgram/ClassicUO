@@ -183,10 +183,12 @@ namespace ClassicUO.Network
             }
 
             WriteUShort(character.Hue);
-            if (character.Equipment[(int)Layer.Hair] != null)
+
+            var hairItem = character.FindItemByLayer(Layer.Hair);
+            if (hairItem != null)
             {
-                WriteUShort(character.Equipment[(int)Layer.Hair].Graphic);
-                WriteUShort(character.Equipment[(int)Layer.Hair].Hue);
+                WriteUShort(hairItem.Graphic);
+                WriteUShort(hairItem.Hue);
             }
             else
             {
@@ -194,10 +196,11 @@ namespace ClassicUO.Network
                 WriteUShort(0x00);
             }
 
-            if (character.Equipment[(int) Layer.Beard] != null)
+            var beardItem = character.FindItemByLayer(Layer.Beard);
+            if (beardItem != null)
             {
-                WriteUShort(character.Equipment[(int) Layer.Beard].Graphic);
-                WriteUShort(character.Equipment[(int) Layer.Beard].Hue);
+                WriteUShort(beardItem.Graphic);
+                WriteUShort(beardItem.Hue);
             }
             else
             {
@@ -216,10 +219,11 @@ namespace ClassicUO.Network
 
             WriteUInt(slot);
             WriteUInt(clientIP);
-            WriteUShort(character.Equipment[(int) Layer.Shirt].Hue);
+            WriteUShort(character.FindItemByLayer(Layer.Shirt).Hue);
 
-            if (character.Equipment[(int) Layer.Pants] != null)
-                WriteUShort(character.Equipment[(int) Layer.Pants].Hue);
+            var pantsItem = character.FindItemByLayer(Layer.Pants);
+            if (pantsItem != null)
+                WriteUShort(pantsItem.Hue);
             else
                 WriteUShort(0x00);
         }

@@ -286,23 +286,9 @@ namespace ClassicUO.Game
 
             if (item == null)
                 return false;
-
-            if (item.Layer != Layer.Invalid)
-            {
-                Entity e = Get(item.RootContainer);
-
-                if (e != null && e.HasEquipment)
-                {
-                    int index = (int) item.Layer;
-
-                    if (index >= 0 && index < e.Equipment.Length)
-                        e.Equipment[index] = null;
-                }
-            }
-
+            
             foreach (Item i in item.Items)
                 RemoveItem(i, forceRemove);
-
 
             item.Items.Clear();
             item.Destroy();

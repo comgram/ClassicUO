@@ -1014,7 +1014,7 @@ namespace ClassicUO.Network
 
                 for (Layer layer = Layer.ShopBuyRestock; layer < Layer.ShopBuy + 1; layer++)
                 {
-                    Item item = vendor.Equipment[(int)layer];
+                    Item item = vendor.FindItemByLayer(layer);
 
                     //Item a = item?.Items.FirstOrDefault();
 
@@ -1169,8 +1169,6 @@ namespace ClassicUO.Network
                                     Mobile mob = (Mobile) container;
 
                                     mob.Items.Add(item);
-
-                                    mob.Equipment[(int) hold.Layer] = item;
                                 }
                                 else
                                     Log.Warn( "SOMETHING WRONG WITH CONTAINER (should be a mobile)");
@@ -1286,11 +1284,6 @@ namespace ClassicUO.Network
                     cont.Items.ProcessDelta();
                     World.Items.Remove(item);
                     World.Items.ProcessDelta();
-
-                    if (cont.HasEquipment && item.Layer != Layer.Invalid)
-                    {
-                        cont.Equipment[(int) item.Layer] = null;
-                    }
                 }
 
                 item.Container = Serial.INVALID;
@@ -1314,7 +1307,6 @@ namespace ClassicUO.Network
 
             if (mobile != null)
             {
-                mobile.Equipment[(int) item.Layer] = item;
                 mobile.Items.Add(item);
                 mobile.Items.ProcessDelta();
             }
@@ -2089,9 +2081,6 @@ namespace ClassicUO.Network
 
             uint itemSerial;
 
-            // reset equipment
-            mobile.Equipment = null;
-
             while ((itemSerial = p.ReadUInt()) != 0)
             {
                 Item item = World.GetOrCreateItem(itemSerial);
@@ -2112,7 +2101,6 @@ namespace ClassicUO.Network
                 item.Amount = 1;
                 item.Container = mobile;
                 mobile.Items.Add(item);
-                mobile.Equipment[(int) item.Layer] = item;
 
                 //if (World.OPL.Contains(serial))
                 //    NetClient.Socket.Send(new PMegaClilocRequest(item));
@@ -2314,7 +2302,6 @@ namespace ClassicUO.Network
                 if (item != null && item.Container == corpse)
                 {
                     item.Layer = layer;
-                    corpse.Equipment[(int) layer] = item;
                 }
 
                 layer = (Layer) p.ReadByte();

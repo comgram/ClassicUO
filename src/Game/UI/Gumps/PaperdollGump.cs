@@ -594,7 +594,9 @@ namespace ClassicUO.Game.UI.Gumps
                     _itemGump = null;
                 }
 
-                if (_item != _mobile.Equipment[(int)_layer])
+                var itemAtLayer = _mobile.FindItemByLayer(_layer);
+
+                if (_item != itemAtLayer)
                 {
                     if (_itemGump != null)
                     {
@@ -602,7 +604,7 @@ namespace ClassicUO.Game.UI.Gumps
                         _itemGump = null;
                     }
 
-                    _item = _mobile.Equipment[(int)_layer];
+                    _item = itemAtLayer;
 
                     if (_item != null)
                     {

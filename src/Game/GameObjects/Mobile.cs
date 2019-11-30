@@ -118,16 +118,24 @@ namespace ClassicUO.Game.GameObjects
                                Graphic == 0x02B6 || Graphic == 0x02B7 ||
                                Graphic == 0x03DB || Graphic == 0x03DF || Graphic == 0x03E2 || Graphic == 0x02E8 || Graphic == 0x02E9; // Vampiric
 
-        public bool IsMounted => HasEquipment && Equipment[0x19] != null && !IsDrivingBoat && Equipment[0x19].GetGraphicForAnimation() != 0xFFFF;
+        public bool IsMounted
+        {
+            get
+            {
+                Item mount = FindItemByLayer(Layer.Mount);
+
+                return mount != null && !IsDrivingBoat && mount.GetGraphicForAnimation() != 0xFFFF;
+            }
+        }
 
         public bool IsDrivingBoat
         {
             get
             {
-                if (FileManager.ClientVersion >= ClientVersions.CV_70331 && HasEquipment)
+                if (FileManager.ClientVersion >= ClientVersions.CV_70331)
                 {
-                    Item m = Equipment[0x19];
-                    return m != null && m.Graphic == 0x3E96; // TODO: im not sure if each server sends this value ever
+                    Item mount = FindItemByLayer(Layer.Mount);
+                    return mount != null && mount.Graphic == 0x3E96; // TODO: im not sure if each server sends this value ever
                 }
 
                 return false;
@@ -988,13 +996,6 @@ namespace ClassicUO.Game.GameObjects
         {
             HitsTexture?.Destroy();
             HitsTexture = null;
-
-            if (HasEquipment)
-            {
-                for (int i = 0; i < Equipment.Length; i++)
-                    Equipment[i] = null;
-            }
-
             base.Destroy();
         }
 

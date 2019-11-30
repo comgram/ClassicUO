@@ -321,8 +321,9 @@ namespace ClassicUO.Game.UI.Controls
                 Item != null && !Item.IsDestroyed &&
                 !Item.ItemData.IsContainer && Item.Items.Count == 0 &&
                 (container = World.Items.Get(Item.RootContainer)) != null &&
-                container != World.Player.Equipment[(int) Layer.Backpack]
-            ){
+                container != World.Player.FindItemByLayer( Layer.Backpack)
+            )
+            {
                 GameActions.GrabItem(Item, Item.Amount);
             } else
                 GameActions.DoubleClick(LocalSerial);

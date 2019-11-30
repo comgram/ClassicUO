@@ -403,14 +403,14 @@ namespace ClassicUO.Game
 
             if(bag == default(Serial))
                 bag = ProfileManager.Current.GrabBagSerial == 0
-                    ? World.Player.Equipment[(int) Layer.Backpack].Serial
+                    ? World.Player.FindItemByLayer(Layer.Backpack).Serial
                     : (Serial) ProfileManager.Current.GrabBagSerial;
 
             if (!World.Items.Contains(bag))
             {
                 GameActions.Print("Grab Bag not found, setting to Backpack.");
                 ProfileManager.Current.GrabBagSerial = 0;
-                bag = World.Player.Equipment[(int) Layer.Backpack].Serial;
+                bag = World.Player.FindItemByLayer(Layer.Backpack).Serial;
             }
             DropItem(serial, Position.INVALID, bag);
         }
