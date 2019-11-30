@@ -229,12 +229,29 @@ namespace ClassicUO.Game.UI.Gumps.CharCreation
             {
                 layer = Layer.Beard;
                 content = CharacterCreationValues.GetFacialHairComboContent(race);
-                _character.Items.Add(CreateItem(content.GetGraphic(CurrentOption[layer]), CurrentColorOption[layer].Item2, layer));
+                var item = CreateItem(content.GetGraphic(CurrentOption[layer]), CurrentColorOption[layer].Item2, layer);
+                RemoveFromEquipment(layer);
+                if (item != null)
+                    _character.Items.Add(item);
             }
 
             layer = Layer.Hair;
             content = CharacterCreationValues.GetHairComboContent(isFemale, race);
-            _character.Items.Add(CreateItem(content.GetGraphic(CurrentOption[layer]), CurrentColorOption[layer].Item2, layer));
+
+            RemoveFromEquipment(layer);
+            var item2 = CreateItem(content.GetGraphic(CurrentOption[layer]), CurrentColorOption[layer].Item2, layer);
+            if (item2 != null)
+                _character.Items.Add(item2);
+        }
+
+        private void RemoveFromEquipment(Layer layer)
+        {
+            var item = _character.FindItemByLayer(layer);
+            if (item != null)
+            {
+                item.Destroy();
+                _character.Items.Remove(item);
+            }
         }
 
         private void Race_ValueChanged(object sender, EventArgs e)
