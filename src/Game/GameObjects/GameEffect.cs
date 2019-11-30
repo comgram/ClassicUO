@@ -21,6 +21,7 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 
 using ClassicUO.Game.Data;
@@ -36,7 +37,7 @@ namespace ClassicUO.Game.GameObjects
         protected GameEffect()
         {
             Children = new List<GameEffect>();
-            AlphaHue = 0;
+            AlphaHue = 0xFF;
         }
 
         public List<GameEffect> Children { get; }
@@ -65,13 +66,12 @@ namespace ClassicUO.Game.GameObjects
 
         public long Duration = -1;
 
-
         public void Load()
         {
             AnimDataFrame = FileManager.AnimData.CalculateCurrentGraphic(Graphic);
             IsEnabled = true;
             AnimIndex = 0;
-            Speed = AnimDataFrame.FrameInterval != 0 ? AnimDataFrame.FrameInterval * Constants.ITEM_EFFECT_ANIMATION_DELAY + Speed : Constants.ITEM_EFFECT_ANIMATION_DELAY;
+            Speed += AnimDataFrame.FrameInterval != 0 ? AnimDataFrame.FrameInterval * Constants.ITEM_EFFECT_ANIMATION_DELAY : Constants.ITEM_EFFECT_ANIMATION_DELAY;
         }
 
         public override void Update(double totalMS, double frameMS)
@@ -93,8 +93,23 @@ namespace ClassicUO.Game.GameObjects
             {
                 if (Duration < totalMS && Duration >= 0)
                     Destroy();
+                //else
+                //{
+                //    unsafe
+                //    {
+                //        int count = AnimDataFrame.FrameCount;
+                //        if (count == 0)
+                //            count = 1;
+
+                //        AnimationGraphic = (Graphic) (Graphic + AnimDataFrame.FrameData[((int) Math.Max(1, (_start / 50d) / Speed)) % count]);
+                //    }
+
+                //    _start += frameMS;
+                //}
+
                 else if (LastChangeFrameTime < totalMS)
                 {
+
                     if (AnimDataFrame.FrameCount != 0)
                     {
                         unsafe

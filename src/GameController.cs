@@ -105,13 +105,14 @@ namespace ClassicUO
             base.LoadContent();
 
             SetScene(new LoginScene());
+            SetWindowPositionBySettings();
         }
 
         protected override void UnloadContent()
         {
-            SDL_GetWindowBordersSize(Window.Handle, out int top, out int left, out _, out _);
-            Settings.GlobalSettings.WindowPosition = new Point( Math.Max(0, Window.ClientBounds.X - left),
-                                                               Math.Max(0, Window.ClientBounds.Y - top));
+            SDL.SDL_GetWindowBordersSize(Window.Handle, out int top, out int left, out int bottom, out int right);
+            Settings.GlobalSettings.WindowPosition = new Point(Math.Max(0, Window.ClientBounds.X - left), Math.Max(0, Window.ClientBounds.Y - top));
+            
             _scene?.Unload();
             Settings.GlobalSettings.Save();
             Plugin.OnClosing();
@@ -126,25 +127,6 @@ namespace ClassicUO
             if (scene != null)
             {
                 Window.AllowUserResizing = scene.CanResize;
-
-
-                if (scene.CanBeMaximized)
-                {
-                    SetWindowSize(scene.Width, scene.Height);
-                    MaximizeWindow();
-                }
-                else
-                {
-                    RestoreWindow();
-                    SetWindowSize(scene.Width, scene.Height);
-                    SDL_GetWindowBordersSize(Window.Handle, out int top, out int left, out int bottom, out int right);
-
-                    if (Settings.GlobalSettings.WindowPosition.HasValue)
-                    {
-                        SetWindowPosition(left + Settings.GlobalSettings.WindowPosition.Value.X, top + Settings.GlobalSettings.WindowPosition.Value.Y);
-                    }
-                }
-
                 scene.Load();
             }
         }
@@ -187,6 +169,18 @@ namespace ClassicUO
 
         public void SetWindowBorderless(bool borderless)
         {
+            SDL_WindowFlags flags = (SDL_WindowFlags) SDL.SDL_GetWindowFlags(Window.Handle);
+
+            if ((flags & SDL_WindowFlags.SDL_WINDOW_BORDERLESS) != 0 && borderless)
+            {
+                return;
+            }
+
+            if ((flags & SDL_WindowFlags.SDL_WINDOW_BORDERLESS) == 0 && !borderless)
+            {
+                return;
+            }
+            
             SDL_SetWindowBordered(Window.Handle, borderless ? SDL_bool.SDL_FALSE : SDL_bool.SDL_TRUE);
 
             SDL_GetCurrentDisplayMode(0, out SDL_DisplayMode displayMode);
@@ -204,7 +198,7 @@ namespace ClassicUO
                 int top, left, bottom, right;
                 SDL_GetWindowBordersSize(Window.Handle, out top, out left, out bottom, out right);
                 SetWindowSize(width, height - (top - bottom));
-                SDL_SetWindowPosition(Window.Handle, 0, top - bottom);
+                SetWindowPositionBySettings();
             }
 
             var viewport = UIManager.GetGump<WorldViewportGump>();
@@ -222,9 +216,30 @@ namespace ClassicUO
             SDL.SDL_MaximizeWindow(Window.Handle);
         }
 
+        public bool IsWindowMaximized()
+        {
+            SDL.SDL_WindowFlags flags = (SDL.SDL_WindowFlags) SDL.SDL_GetWindowFlags(Window.Handle);
+
+            return (flags & SDL_WindowFlags.SDL_WINDOW_MAXIMIZED) != 0;
+        }
+
         public void RestoreWindow()
         {
             SDL.SDL_RestoreWindow(Window.Handle);
+        }
+
+        public void SetWindowPositionBySettings()
+        {
+            SDL_GetWindowBordersSize(Window.Handle, out int top, out int left, out int bottom, out int right);
+            if (Settings.GlobalSettings.WindowPosition.HasValue)
+            {
+                int x = left + Settings.GlobalSettings.WindowPosition.Value.X;
+                int y = top + Settings.GlobalSettings.WindowPosition.Value.Y;
+                x = Math.Max(0, x);
+                y = Math.Max(0, y);
+
+                SetWindowPosition(x, y);
+            }
         }
 
         public void LoadGameFilesFromFileSystem()
@@ -568,10 +583,8 @@ namespace ClassicUO
                 //TODO:
             }
 
-            uint flags = SDL.SDL_GetWindowFlags(Window.Handle);
-            if ((flags & (uint) SDL.SDL_WindowFlags.SDL_WINDOW_MAXIMIZED) == 0)
+            if (!IsWindowMaximized())
             {
-                // TODO: option set WindowClientBounds
                 ProfileManager.Current.WindowClientBounds = new Point(width, height);
             }
 
@@ -585,8 +598,6 @@ namespace ClassicUO
                 viewport.X = -5;
                 viewport.Y = -5;
             }
-
-            if (ProfileManager.Current.WindowBorderless) SetWindowBorderless(true);
         }
 
 
@@ -609,6 +620,10 @@ namespace ClassicUO
 
                     switch (e.window.windowEvent)
                     {
+                        case SDL_WindowEventID.SDL_WINDOWEVENT_MOVED:
+
+                           
+                            break;
                         case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_ENTER:
                             Mouse.MouseInWindow = true;
 
@@ -687,6 +702,33 @@ namespace ClassicUO
                     }
 
                     Keyboard.OnKeyUp(e.key);
+
+                    //if (e.key.keysym.sym == SDL_Keycode.SDLK_0)
+                    //{
+
+                       
+                    //    byte[] firebreathcode = {
+
+                    //   0xC0, 
+                    //  0x00, 0x00, 0x00, 0x00 , // source serial
+                    //  0x00 ,0x00 ,0x00 , 0x00,  // target serial
+                    //    0x00, 0xAA,  // graphic
+                    //    0xAC, 0x06, // src X
+                    //    0x74, 0x06,  // src Y
+                    //    0x28,       // src Z
+                    //   0x3F, 0x06, // targ X
+                    //    0x74, 0x06, // targY
+                    //        0x2B,   // targZ
+                    //        0x3F, 0x01, 0xF0 , 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ,0x00, 0x00,
+                    //   0x00, 0x00, 0x00, 0x00, 
+                    //    };
+                    //    int xx =  (0x06 << 8) | (0xAC ) ;
+                    //    int yy =  (0x06 << 8) | (0x74 ) ;
+                    //    int txx = (0x06 << 8) |  (0x3F);
+                    //    int tyy = (0x06 << 8) | (0x74 );
+
+                    //    NetClient.EnqueuePacketFromPlugin(firebreathcode, 36);
+                    //}
 
                     //UIManager.MouseOverControl?.InvokeKeyUp(e.key.keysym.sym, e.key.keysym.mod);
                     //if (UIManager.MouseOverControl != UIManager.KeyboardFocusControl)

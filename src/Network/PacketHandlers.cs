@@ -951,10 +951,9 @@ namespace ClassicUO.Network
             if (!source.IsValid || !dest.IsValid)
             {
                 effect = new MovingEffect(source, dest, sourceX, sourceY, sourceZ,
-                                          destX, destY, destZ, graphic, hue, true)
+                                          destX, destY, destZ, graphic, hue, true, 5)
                 {
                     Duration = Time.Ticks + 5000,
-                    MovingDelay = 5
                 };
             }
             else
@@ -1780,7 +1779,7 @@ namespace ClassicUO.Network
             Position srcPos = new Position(p.ReadUShort(), p.ReadUShort(), p.ReadSByte());
             Position targPos = new Position(p.ReadUShort(), p.ReadUShort(), p.ReadSByte());
             byte speed = p.ReadByte();
-            ushort duration = (ushort) (p.ReadByte() * 50);
+            ushort duration = p.ReadByte();
             p.Skip(2);
             bool fixedDirection = p.ReadBool();
             bool doesExplode = p.ReadBool();

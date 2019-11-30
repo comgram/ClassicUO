@@ -29,6 +29,8 @@ using ClassicUO.IO;
 using ClassicUO.IO.Resources;
 using ClassicUO.Renderer;
 
+using Microsoft.Xna.Framework;
+
 namespace ClassicUO.Game.GameObjects
 {
     internal sealed partial class MovingEffect
@@ -59,6 +61,8 @@ namespace ClassicUO.Game.GameObjects
 
             //posX += 22;
             //posY += 22;
+
+
 
             if (ProfileManager.Current.NoColorObjectsOutOfRange && Distance > World.ClientViewRange)
             {

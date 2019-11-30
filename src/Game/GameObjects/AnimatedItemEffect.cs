@@ -25,7 +25,7 @@ namespace ClassicUO.Game.GameObjects
 {
     internal sealed partial class AnimatedItemEffect : GameEffect
     {
-        public AnimatedItemEffect(Graphic graphic, Hue hue, int duration, int speed)
+        public AnimatedItemEffect(Graphic graphic, Hue hue, int duration, int speed) : base()
         {
             Graphic = graphic;
             Hue = hue;

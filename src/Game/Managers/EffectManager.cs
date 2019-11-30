@@ -62,31 +62,25 @@ namespace ClassicUO.Game.Managers
             if (hue != 0)
                 hue++;
 
+            duration *= Constants.ITEM_EFFECT_ANIMATION_DELAY;
+
             switch (type)
             {
                 case GraphicEffectType.Moving:
-
                     if (graphic <= 0)
                         return;
 
                     if (speed == 0)
                         speed++;
-
-                    int delay = 20 - speed;
-
-                    if (delay <= 0)
-                        delay = 20;
-
-                    effect = new MovingEffect(source, target, srcPos.X, srcPos.Y, srcPos.Z, targPos.X, targPos.Y, targPos.Z, graphic, hue, fixedDir)
+                    
+                    effect = new MovingEffect(source, target, srcPos.X, srcPos.Y, srcPos.Z, targPos.X, targPos.Y, targPos.Z, graphic, hue, fixedDir, speed)
                     {
                         Blend = blendmode,
-                        MovingDelay = (byte) delay
                     };
 
                     if (doesExplode)
                         effect.AddChildEffect(new AnimatedItemEffect(target, targPos.X, targPos.Y, targPos.Z, 0x36Cb, hue, 9, speed));
 
-                    effect.Update(Time.Ticks, 0);
                     break;
 
                 case GraphicEffectType.Lightning:
