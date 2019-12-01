@@ -232,7 +232,10 @@ namespace ClassicUO.Game.UI.Gumps.CharCreation
                 var item = CreateItem(content.GetGraphic(CurrentOption[layer]), CurrentColorOption[layer].Item2, layer);
                 RemoveFromEquipment(layer);
                 if (item != null)
+                {
                     _character.Items.Add(item);
+                    _character.ProcessDelta();
+                }
             }
 
             layer = Layer.Hair;
@@ -240,8 +243,12 @@ namespace ClassicUO.Game.UI.Gumps.CharCreation
 
             RemoveFromEquipment(layer);
             var item2 = CreateItem(content.GetGraphic(CurrentOption[layer]), CurrentColorOption[layer].Item2, layer);
+
             if (item2 != null)
+            {
                 _character.Items.Add(item2);
+                _character.ProcessDelta();
+            }
         }
 
         private void RemoveFromEquipment(Layer layer)
@@ -249,8 +256,10 @@ namespace ClassicUO.Game.UI.Gumps.CharCreation
             var item = _character.FindItemByLayer(layer);
             if (item != null)
             {
-                item.Destroy();
                 _character.Items.Remove(item);
+                World.Items.Remove(item);
+                World.Items.ProcessDelta();
+                _character.ProcessDelta();
             }
         }
 
